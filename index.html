@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Startup Idea Generator</title>
+</head>
+<body>
+
+<h1>Startup Idea Generator</h1>
+
+<input id="idea" placeholder="Enter startup idea" />
+<button onclick="generate()">Generate</button>
+
+<p id="result"></p>
+
+<script>
+async function generate() {
+
+const idea = document.getElementById("idea").value;
+
+const res = await fetch("/api/generate", {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({ idea })
+});
+
+const data = await res.json();
+
+document.getElementById("result").innerText = data.result;
+
+}
+</script>
+
+</body>
+</html>
