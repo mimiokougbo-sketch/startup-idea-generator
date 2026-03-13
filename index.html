@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Startup Idea Generator</title>
+  <title>Startup Idea Generator</title>
 </head>
+
 <body>
 
 <h1>Startup Idea Generator</h1>
 
 <input id="idea" placeholder="Enter startup idea" />
+
 <button onclick="generate()">Generate</button>
 
 <p id="result"></p>
@@ -15,19 +17,35 @@
 <script>
 async function generate() {
 
-const idea = document.getElementById("idea").value;
+  const idea = document.getElementById("idea").value;
+  const result = document.getElementById("result");
 
-const res = await fetch("/api/generate", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({ idea })
-});
+  result.innerText = "Generating...";
 
-const data = await res.json();
+  try {
 
-document.getElementById("result").innerText = data.result;
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ idea })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      result.innerText = data.error || "Something went wrong.";
+      return;
+    }
+
+    result.innerText = data.result;
+
+  } catch (error) {
+
+    result.innerText = "Request failed.";
+
+  }
 
 }
 </script>
