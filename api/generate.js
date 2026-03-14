@@ -24,20 +24,23 @@ export default async function handler(req, res) {
           {
             role: "system",
             content: "You are a helpful startup adviser."
-          },
+          
           {
             role: "user",
-            content: `Generate 5 startup concepts based on this idea: "${idea}".
+           content: `Generate 5 startup concepts based on this idea: "${idea}".
 
-For each concept include:
+For each concept, format the answer clearly using this structure:
 
-1. Problem
-2. Solution
-3. Target Market
-4. Revenue Model
-5. Launch Strategy
+Concept Title:
+Problem:
+Solution:
+Target Market:
+Revenue Model:
+Launch Strategy:
 
-Make each concept different and practical.`
+Do not use markdown symbols like ### or **.
+Make each concept different, practical, and easy to read.`
+.`
           }
         ],
         temperature: 0.7
