@@ -46,7 +46,7 @@ Make each concept different and practical.`
 
     const data = await response.json();
 
-    const text = data.choices?.[0]?.message?.content || "No response generated.";
+    const text = data.choices?.[0]?.message?.content || "No response returned.";
 
     res.status(200).json({ text });
 
@@ -59,6 +59,10 @@ Make each concept different and practical.`
     });
 
   }
+
 }
 
    
+
+
+ 
