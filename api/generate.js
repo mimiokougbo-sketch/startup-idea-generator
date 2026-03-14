@@ -48,7 +48,8 @@ Make each concept different and practical.`
 
     const text = data.choices?.[0]?.message?.content || "No response returned.";
 
-    res.status(200).json({ text });
+   res.status(200).json({ result: text });
+
 
   } catch (error) {
 
