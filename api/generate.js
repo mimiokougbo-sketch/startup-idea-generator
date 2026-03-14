@@ -1,25 +1,35 @@
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { idea } = req.body;
-
   try {
+    const { idea } = req.body || {};
+
+    if (!idea) {
+      return res.status(400).json({ error: "Idea is required" });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
+    }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
           {
+            role: "system",
+            content: "You generate startup ideas. Return Problem, Solution, and Revenue Model."
+          },
+          {
             role: "user",
-            content: `Expand this startup idea into problem, solution, and revenue model: ${idea}`
+            content: `Create a startup idea for: ${idea}`
           }
         ]
       })
@@ -27,18 +37,19 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    res.status(200).json({
-      result: data.choices[0].message.content
-    });
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: data?.error?.message || "OpenAI request failed"
+      });
+    }
 
+    return res.status(200).json({
+      result: data?.choices?.[0]?.message?.content || "No response returned."
+    });
   } catch (error) {
-
-    res.status(500).json({
-      error: "Server error"
+    return res.status(500).json({
+      error: error.message || "Server error"
     });
-
   }
-
 }
-
-
+  
