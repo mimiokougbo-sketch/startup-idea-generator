@@ -14,30 +14,33 @@ module.exports = async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: "You are a helpful startup adviser."
+            content: "You are a startup advisor."
           },
           {
             role: "user",
-            content: `Generate 5 startup concepts based on this idea: "${idea}".
+            content: `
+Generate 3 startup concepts based on this idea: "${idea}"
 
-For each concept, format the answer clearly using this structure:
+For each concept provide:
 
-Concept Title:
-Problem:
-Solution:
-Target Market:
-Revenue Model:
-Launch Strategy:
+Concept Title
+Problem
+Solution
+Target Market
+Revenue Model
+Launch Strategy
+Startup Validation Score (score from 1–10)
+Why This Idea Could Work
 
-Do not use markdown symbols like ### or **.
-Make each concept different, practical, and easy to read.`
+Keep everything simple and easy to read.
+`
           }
         ],
         temperature: 0.7
@@ -53,8 +56,7 @@ Make each concept different, practical, and easy to read.`
       });
     }
 
-    const text =
-      data.choices?.[0]?.message?.content || "No response returned.";
+    const text = data.choices?.[0]?.message?.content || "No response.";
 
     return res.status(200).json({ result: text });
   } catch (error) {
@@ -62,4 +64,3 @@ Make each concept different, practical, and easy to read.`
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
-     
