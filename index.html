@@ -1,281 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LaunchSpark AI</title>
-  <style>
-    * {
-      box-sizing: border-box;
+<script>
+async function generate() {
+  const idea = document.getElementById("idea").value.trim();
+  const result = document.getElementById("result");
+  const message = document.getElementById("message");
+  const generateBtn = document.getElementById("generateBtn");
+
+  message.textContent = "";
+
+  if (!idea) {
+    result.textContent = "Please enter an idea first.";
+    return;
+  }
+
+  result.innerHTML = "Generating startup ideas...";
+  generateBtn.disabled = true;
+  generateBtn.textContent = "Generating...";
+
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ idea })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      result.textContent = data.error || "Something went wrong.";
+      return;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f7f8fc;
-      color: #1f2937;
-    }
+    result.textContent = data.result || "No response returned.";
+  } catch (error) {
+    result.textContent = "Request failed.";
+  } finally {
+    generateBtn.disabled = false;
+    generateBtn.textContent = "Generate";
+  }
+}
 
-    .container {
-      max-width: 900px;
-      margin: 60px auto;
-      background: #ffffff;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    }
+function copyResult() {
+  const result = document.getElementById("result").innerText;
+  const message = document.getElementById("message");
 
-    .badge {
-      display: inline-block;
-      background: #eef2ff;
-      color: #4338ca;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
+  navigator.clipboard.writeText(result);
+  message.textContent = "Result copied successfully.";
+}
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: 44px;
-      line-height: 1.1;
-    }
+function clearResult() {
+  document.getElementById("idea").value = "";
+  document.getElementById("result").textContent = "Your result will appear here.";
+  document.getElementById("message").textContent = "";
+}
 
-    .subtitle {
-      margin: 0 0 30px;
-      font-size: 18px;
-      color: #6b7280;
-    }
+function downloadResult() {
+  const result = document.getElementById("result").innerText;
+  const blob = new Blob([result], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
 
-    .input-group {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "launchspark-startup-idea.txt";
+  a.click();
 
-    input {
-      flex: 1;
-      min-width: 240px;
-      padding: 14px 16px;
-      font-size: 16px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      outline: none;
-    }
+  URL.revokeObjectURL(url);
 
-    input:focus {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-    }
+  const message = document.getElementById("message");
+  message.textContent = "Download started.";
+}
 
-    button {
-      padding: 14px 20px;
-      font-size: 15px;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      background: #4f46e5;
-      color: white;
-      cursor: pointer;
-    }
+function shareTwitter() {
+  const result = document.getElementById("result").innerText;
 
-    button:hover {
-      background: #4338ca;
-    }
+  const text = encodeURIComponent(
+    "I just generated a startup idea using LaunchSpark AI 🚀\n\n" +
+    result.slice(0, 200) +
+    "...\n\nTry it here:"
+  );
 
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
+  const url = encodeURIComponent(window.location.href);
 
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
+  window.open(
+    `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+    "_blank"
+  );
+}
 
-    .secondary-btn {
-      background: #111827;
-    }
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href);
 
-    .secondary-btn:hover {
-      background: #1f2937;
-    }
+  const message = document.getElementById("message");
+  message.textContent = "Link copied. Share it with others!";
+}
+</script>
 
-    .light-btn {
-      background: #e5e7eb;
-      color: #111827;
-    }
 
-    .light-btn:hover {
-      background: #d1d5db;
-    }
-
-    .result-box {
-      margin-top: 10px;
-      padding: 24px;
-      border-radius: 16px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      min-height: 220px;
-      white-space: pre-wrap;
-      line-height: 1.8;
-      font-size: 16px;
-    }
-
-    .footer {
-      margin-top: 24px;
-      font-size: 13px;
-      color: #9ca3af;
-      text-align: center;
-    }
-
-    .loading {
-      color: #4f46e5;
-      font-weight: bold;
-    }
-
-    .success-message {
-      margin-top: 12px;
-      color: #059669;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        margin: 20px;
-        padding: 24px;
-      }
-
-      h1 {
-        font-size: 34px;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      .input-group {
-        flex-direction: column;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="badge">AI Startup Tool</div>
-    <h1>LaunchSpark AI</h1>
-    <p class="subtitle">Turn rough ideas into startup concepts with problem, solution, and revenue model.</p>
-
-    <div class="input-group">
-      <input id="idea" type="text" placeholder="Enter your startup idea..." />
-      <button id="generateBtn" onclick="generate()">Generate</button>
-    </div>
-
-    <div class="action-buttons">
-      <button class="secondary-btn" onclick="copyResult()">Copy Result</button>
-      <button class="light-btn" onclick="downloadResult()">Download TXT</button>
-      <button class="light-btn" onclick="clearResult()">Clear</button>
-    </div>
-
-    <div id="result" class="result-box">Your result will appear here.</div>
-    <div id="message" class="success-message"></div>
-
-    <div class="footer">Powered by OpenAI</div>
-  </div>
-
-  <script>
-    async function generate() {
-      const idea = document.getElementById("idea").value.trim();
-      const result = document.getElementById("result");
-      const message = document.getElementById("message");
-      const generateBtn = document.getElementById("generateBtn");
-
-      message.textContent = "";
-
-      if (!idea) {
-        result.textContent = "Please enter an idea first.";
-        return;
-      }
-
-      result.innerHTML = '<span class="loading">Generating startup ideas...</span>';
-      generateBtn.disabled = true;
-      generateBtn.textContent = "Generating...";
-
-      try {
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ idea })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          result.textContent = data.error || "Something went wrong.";
-          return;
-        }
-
-        result.textContent = data.result || "No response returned.";
-      } catch (error) {
-        result.textContent = "Request failed.";
-      } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = "Generate";
-      }
-    }
-
-    function copyResult() {
-      const result = document.getElementById("result").innerText.trim();
-      const message = document.getElementById("message");
-
-      if (!result || result === "Your result will appear here.") {
-        message.textContent = "Nothing to copy yet.";
-        return;
-      }
-
-      navigator.clipboard.writeText(result);
-      message.textContent = "Result copied successfully.";
-    }
-
-    function clearResult() {
-      document.getElementById("idea").value = "";
-      document.getElementById("result").textContent = "Your result will appear here.";
-      document.getElementById("message").textContent = "";
-    }
-
-    function downloadResult() {
-      const result = document.getElementById("result").innerText.trim();
-      const message = document.getElementById("message");
-
-      if (!result || result === "Your result will appear here.") {
-        message.textContent = "Nothing to download yet.";
-        return;
-      }
-
-      const blob = new Blob([result], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "launchspark-startup-idea.txt";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      message.textContent = "Download started.";
-    }
-  </script>
-</body>
-</html>
-    
+   
+   
+     
+     
