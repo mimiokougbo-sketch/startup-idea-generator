@@ -1,103 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LaunchSpark AI</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#f5f6fb;
+margin:0;
+padding:40px;
+display:flex;
+justify-content:center;
+}
+
+.container{
+background:white;
+padding:40px;
+border-radius:16px;
+width:700px;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1{
+font-size:36px;
+margin-bottom:10px;
+}
+
+.subtitle{
+color:#666;
+margin-bottom:30px;
+}
+
+.input-group{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+input{
+flex:1;
+padding:12px;
+font-size:16px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+padding:12px 18px;
+border:none;
+border-radius:8px;
+background:#4f46e5;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#4338ca;
+}
+
+.action-buttons{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+.light-btn{
+background:#e5e7eb;
+color:black;
+}
+
+.secondary-btn{
+background:black;
+}
+
+.result-box{
+background:#f9fafb;
+padding:20px;
+border-radius:12px;
+border:1px solid #eee;
+white-space:pre-wrap;
+min-height:200px;
+}
+
+.footer{
+margin-top:20px;
+font-size:13px;
+color:#999;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>LaunchSpark AI</h1>
+
+<p class="subtitle">
+Turn Any Idea Into a Startup Plan in Seconds
+</p>
+
+<div class="input-group">
+
+<input id="idea" placeholder="Try: AI fitness coach, pet sitting app">
+
+<button onclick="generate()" id="generateBtn">Generate</button>
+
+</div>
+
+<div class="action-buttons">
+
+<button class="secondary-btn" onclick="copyResult()">Copy Result</button>
+
+<button class="light-btn" onclick="downloadResult()">Download TXT</button>
+
+<button class="light-btn" onclick="clearResult()">Clear</button>
+
+</div>
+
+<div id="result" class="result-box">
+Your result will appear here.
+</div>
+
+<div id="message"></div>
+
+<div class="footer">
+Powered by OpenAI
+</div>
+
+</div>
+
 <script>
-async function generate() {
-  const idea = document.getElementById("idea").value.trim();
-  const result = document.getElementById("result");
-  const message = document.getElementById("message");
-  const generateBtn = document.getElementById("generateBtn");
 
-  message.textContent = "";
+async function generate(){
 
-  if (!idea) {
-    result.textContent = "Please enter an idea first.";
-    return;
-  }
+const idea=document.getElementById("idea").value;
 
-  result.innerHTML = "Generating startup ideas...";
-  generateBtn.disabled = true;
-  generateBtn.textContent = "Generating...";
+const result=document.getElementById("result");
 
-  try {
-    const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ idea })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      result.textContent = data.error || "Something went wrong.";
-      return;
-    }
-
-    result.textContent = data.result || "No response returned.";
-  } catch (error) {
-    result.textContent = "Request failed.";
-  } finally {
-    generateBtn.disabled = false;
-    generateBtn.textContent = "Generate";
-  }
+if(!idea){
+result.textContent="Please enter an idea first.";
+return;
 }
 
-function copyResult() {
-  const result = document.getElementById("result").innerText;
-  const message = document.getElementById("message");
+result.textContent="Generating startup ideas...";
 
-  navigator.clipboard.writeText(result);
-  message.textContent = "Result copied successfully.";
+try{
+
+const res=await fetch("/api/generate",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({idea})
+
+});
+
+const data=await res.json();
+
+result.textContent=data.result;
+
+}catch(err){
+
+result.textContent="Request failed.";
+
 }
 
-function clearResult() {
-  document.getElementById("idea").value = "";
-  document.getElementById("result").textContent = "Your result will appear here.";
-  document.getElementById("message").textContent = "";
 }
 
-function downloadResult() {
-  const result = document.getElementById("result").innerText;
-  const blob = new Blob([result], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
+function copyResult(){
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "launchspark-startup-idea.txt";
-  a.click();
+const text=document.getElementById("result").innerText;
 
-  URL.revokeObjectURL(url);
+navigator.clipboard.writeText(text);
 
-  const message = document.getElementById("message");
-  message.textContent = "Download started.";
+document.getElementById("message").textContent="Result copied.";
+
 }
 
-function shareTwitter() {
-  const result = document.getElementById("result").innerText;
+function clearResult(){
 
-  const text = encodeURIComponent(
-    "I just generated a startup idea using LaunchSpark AI 🚀\n\n" +
-    result.slice(0, 200) +
-    "...\n\nTry it here:"
-  );
+document.getElementById("idea").value="";
 
-  const url = encodeURIComponent(window.location.href);
+document.getElementById("result").textContent="Your result will appear here.";
 
-  window.open(
-    `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-    "_blank"
-  );
 }
 
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href);
+function downloadResult(){
 
-  const message = document.getElementById("message");
-  message.textContent = "Link copied. Share it with others!";
+const text=document.getElementById("result").innerText;
+
+const blob=new Blob([text],{type:"text/plain"});
+
+const url=URL.createObjectURL(blob);
+
+const a=document.createElement("a");
+
+a.href=url;
+
+a.download="startup-idea.txt";
+
+a.click();
+
+URL.revokeObjectURL(url);
+
 }
+
 </script>
 
+</body>
 
-   
-   
-     
-     
+</html>
