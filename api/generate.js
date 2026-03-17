@@ -1,11 +1,9 @@
 export default async function handler(req, res) {
-
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-
     const { idea } = req.body || {};
 
     if (!idea) {
@@ -24,10 +22,10 @@ export default async function handler(req, res) {
           {
             role: "system",
             content: "You are a helpful startup adviser."
-          
+          },
           {
             role: "user",
-           content: `Generate 5 startup concepts based on this idea: "${idea}".
+            content: `Generate 5 startup concepts based on this idea: "${idea}".
 
 For each concept, format the answer clearly using this structure:
 
@@ -40,7 +38,6 @@ Launch Strategy:
 
 Do not use markdown symbols like ### or **.
 Make each concept different, practical, and easy to read.`
-.`
           }
         ],
         temperature: 0.7
@@ -49,24 +46,23 @@ Make each concept different, practical, and easy to read.`
 
     const data = await response.json();
 
-    const text = data.choices?.[0]?.message?.content || "No response returned.";
+    if (!response.ok) {
+      console.error(data);
+      return res.status(500).json({
+        error: data.error?.message || "OpenAI request failed"
+      });
+    }
 
-   res.status(200).json({ result: text });
+    const text =
+      data.choices?.[0]?.message?.content || "No response returned.";
 
-
+    return res.status(200).json({ result: text });
   } catch (error) {
-
     console.error(error);
-
-    res.status(500).json({
-      error: "Something went wrong"
-    });
-
+    return res.status(500).json({ error: "Something went wrong" });
   }
-
 }
 
-   
 
 
  
